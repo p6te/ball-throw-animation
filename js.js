@@ -4,6 +4,7 @@ const fill = document.querySelector(".fill");
 const btn = document.querySelector(".btn-action");
 
 const stretchSpring = () => {
+  fill.style.animationName = "fill";
   fill.style.animationPlayState = "running";
   spring.style.animationPlayState = "running";
   btn.textContent = "Puść sprężynę";
@@ -11,7 +12,9 @@ const stretchSpring = () => {
 
 const releaseSpring = () => {
   const maxFill = parseInt(getComputedStyle(btn).width, 10);
-  const fillStyles = parseInt(getComputedStyle(fill).width, 10);
+
+    const fillStyles = parseInt(getComputedStyle(fill).width, 10);
+
 
   const percentagePower = (fillStyles / maxFill).toFixed(2);
   // console.log(fillStyles);
@@ -21,10 +24,20 @@ const releaseSpring = () => {
   btn.textContent = `Moc uderzenia ${(percentagePower * 100).toFixed()} %`;
 
   const room = document.querySelector(".room");
-  let ballDistance = (
-    parseInt(getComputedStyle(room).width, 10) * percentagePower * 0.8 +
-    200
-  ).toFixed();
+  const roomWidth = parseInt(getComputedStyle(room).width, 10);
+
+  let ballDistance;
+  if (roomWidth >= 1900) {
+    ballDistance = (roomWidth * percentagePower * 0.75 + 300).toFixed();
+  } else if (roomWidth >= 1300 && roomWidth < 1900) {
+    ballDistance = (roomWidth * percentagePower * 0.75 + 250).toFixed();
+  } else if (roomWidth >= 800 && roomWidth < 1299) {
+    ballDistance = (roomWidth * percentagePower * 0.75 + 200).toFixed();
+  } else if (roomWidth < 799 && roomWidth >= 500) {
+    ballDistance = (roomWidth * percentagePower * 0.6 + 170).toFixed();
+  } else if (roomWidth < 499) {
+    ballDistance = (roomWidth * percentagePower * 0.5 + 100).toFixed();
+  }
 
   document.documentElement.style.setProperty("--power-x", `${ballDistance}px`);
   ball.style.animation =
@@ -46,10 +59,25 @@ const releaseSpring = () => {
 
   btn.removeEventListener("touchstart", stretchSpring);
   btn.removeEventListener("touchend", releaseSpring);
+
+  ball.addEventListener("animationend", resetAnimation);
 };
 
 const resetAnimation = () => {
-  console.log("reset");
+  ball.removeEventListener("animationend", resetAnimation);
+
+  setTimeout(() => {
+    btn.addEventListener("mousedown", stretchSpring);
+    btn.addEventListener("mouseup", releaseSpring);
+    btn.addEventListener("touchstart", stretchSpring);
+    btn.addEventListener("touchend", releaseSpring);
+    btn.textContent = "Naciągnij sprężynę";
+
+    spring.style.animation = "";
+    ball.style.animation = "";
+    fill.style.animationName = "none";
+    // fill.style.animation = "fill 1.5s infinite alternate ease-out";
+  }, 1000);
 };
 
 btn.addEventListener("mousedown", stretchSpring);
